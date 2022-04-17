@@ -16,7 +16,7 @@ use App\Http\Controllers\ApiUser;
 */
 
 Route::get('/login', [ApiUser::class, 'login']);
-Route::post('/login', [ApiUser::class, 'login']);
+Route::post('/login', [ApiUser::class, 'login']); 
 
 Route::get('/check', [ApiUser::class, 'checkLoggerIn'])->middleware('auth:api'); 
 

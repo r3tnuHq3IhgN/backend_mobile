@@ -17,7 +17,6 @@ class ApiUser extends Controller
             'email' => 'required|email',
             'password' => 'required',
             'c_password' => 'required|same:password',
-            'phone' => 'required',
         ]);
 
         if ($validator->fails()) {
