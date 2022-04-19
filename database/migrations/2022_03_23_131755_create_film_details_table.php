@@ -16,8 +16,10 @@ class CreateFilmDetailsTable extends Migration
         Schema::create('film_details', function (Blueprint $table) {
             $table->id();
             $table->integer('film_id');
+            $table->integer('room_id');
             $table->integer('type');
-            $table->dateTime('showtime');
+            $table->dateTime('time_start');
+            $table->dateTime('time_end');
             $table->timestamps();
         });
     }

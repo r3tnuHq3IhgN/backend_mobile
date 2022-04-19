@@ -2,14 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Film;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class ApiUser extends Controller
 {
     //
+
+    public function getUser()
+    {
+        return response()->json(Auth::user());
+    }
+    public function getAllUser()
+    {
+        $users = DB::table('users')->all();
+        return response()->json($users);
+    }
+
     public function registration(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -43,7 +57,8 @@ class ApiUser extends Controller
         }
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         $token = $request->user()->token();
         $token->revoke();
         $response = ['message' => 'logout'];
@@ -53,5 +68,24 @@ class ApiUser extends Controller
     public function checkLoggerIn(Request $request)
     {
         return response()->json($request->user('api'));
+    }
+
+    public function changePass(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|same:password',
+            'new_password' => 'required',
+            'confirm_password' => 'required|same:new_password',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 202);
+        } else if ((Hash::check(request('password'), Auth::user()->password))) {
+            DB::table('users')->where('id', '=', Auth::user()->id)->update([
+                'password' =>  bcrypt($request['new_password'])
+            ]);
+            return response()->json('success', 200);
+        } else {
+            return response()->json('inccorect pass', 400);
+        }
     }
 }

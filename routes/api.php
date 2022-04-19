@@ -3,6 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiUser;
+use App\Http\Controllers\ChairController;
+use App\Http\Controllers\FilmDetailController;
+use App\Http\Controllers\FimlController;
+use App\Http\Controllers\FoodComboController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,14 +19,34 @@ use App\Http\Controllers\ApiUser;
 |
 */
 
-Route::get('/login', [ApiUser::class, 'login']);
-Route::post('/login', [ApiUser::class, 'login']); 
 
-Route::get('/check', [ApiUser::class, 'checkLoggerIn'])->middleware('auth:api'); 
+
+Route::get('/login', [ApiUser::class, 'login']);
+
+Route::get('/all-user', [ApiUser::class, 'getAllUser']);
+
+Route::post('/login', [ApiUser::class, 'login']);
+
 
 Route::post('/register', [ApiUser::class, 'registration']);
-Route::post('/logout', [ApiUser::class, 'logout'])->middleware('auth:api');
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('auth:api')->group(function() {
+    //authen
+    Route::get('/user', [ApiUser::class, 'getUser']);
+    Route::post('/change-pass', [ApiUser::class, 'changePass']);
+    Route::get('/check', [ApiUser::class, 'checkLoggerIn']);
+    Route::post('/logout', [ApiUser::class, 'logout']);
+    //films
+    Route::get('/coming-film', [FimlController::class, 'comingFilm']);
+    Route::get('/film-now', [FimlController::class, 'filmNow']);
+});
+
+Route::get('/film/{film_id}/film-days', [FilmDetailController::class, 'filmDay']);
+Route::get('/film/{film_id}/film-hours', [FilmDetailController::class, 'filmHour']);
+Route::get('/film/{film_id}/film-types', [FilmDetailController::class, 'filmType']);
+Route::get('/chairs', [ChairController::class, 'roomChairs']);
+Route::get('/food-combos', [FoodComboController::class, 'index']);

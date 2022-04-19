@@ -16,6 +16,7 @@ class CreateChairsTable extends Migration
         Schema::create('chairs', function (Blueprint $table) {
             $table->id();
             $table->integer('room_id');
+            $table->integer('type');
             $table->string('name');
             $table->integer('status');
             $table->timestamps();
