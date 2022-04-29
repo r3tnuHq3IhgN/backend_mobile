@@ -14,14 +14,14 @@ class ApiUser extends Controller
 {
     //
 
-    public function getUser()
+    public function getUser() 
     {
-        return response()->json(Auth::user());
+        return $this->responseData(Auth::user(),200);
     }
     public function getAllUser()
     {
         $users = DB::table('users')->all();
-        return response()->json($users);
+        return $this->responseData($users,200);
     }
 
     public function registration(Request $request)
@@ -31,10 +31,11 @@ class ApiUser extends Controller
             'email' => 'required|email',
             'password' => 'required',
             'c_password' => 'required|same:password',
+            'phone' => 'required',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 202);
+            return $this->responseData($validator->errors(), 202);
         }
         $allData = $request->all();
         $allData['password'] = bcrypt($allData['password']);
@@ -42,18 +43,18 @@ class ApiUser extends Controller
         $resArr = [];
         $resArr['token'] = $user->createToken('api-token')->accessToken;
         $resArr['name'] = $user->name;
-        return response()->json($resArr, 200);
+        return $this->responseData($resArr, 200);
     }
     public function login(Request $request)
     {
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        if (Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
             $user = Auth::user();
             $resArr = [];
             $resArr['token'] = $user->createToken('api-token')->accessToken;
             $resArr['name'] = $user->name;
-            return response()->json($resArr, 200);
+            return  $this->responseData($resArr, 200);
         } else {
-            return response()->json(['error' => 'Unauthorized Access'], 203);
+            return $this->responseData(['error' => 'Unauthorized Access'], 203);
         }
     }
 
@@ -62,12 +63,12 @@ class ApiUser extends Controller
         $token = $request->user()->token();
         $token->revoke();
         $response = ['message' => 'logout'];
-        return response($response, 200);
+        return $this->responseData($response, 200);
     }
 
     public function checkLoggerIn(Request $request)
     {
-        return response()->json($request->user('api'));
+        return $this->responseData($request->user('api'));
     }
 
     public function changePass(Request $request)
@@ -78,14 +79,14 @@ class ApiUser extends Controller
             'confirm_password' => 'required|same:new_password',
         ]);
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 202);
+            return $this->responseData($validator->errors(), 202);
         } else if ((Hash::check(request('password'), Auth::user()->password))) {
             DB::table('users')->where('id', '=', Auth::user()->id)->update([
                 'password' =>  bcrypt($request['new_password'])
             ]);
-            return response()->json('success', 200);
+            return $this->responseMessage('success');
         } else {
-            return response()->json('inccorect pass', 400);
+            return $this->responseMessage('inccorect pass');
         }
     }
 }

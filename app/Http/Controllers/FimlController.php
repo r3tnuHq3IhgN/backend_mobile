@@ -21,10 +21,12 @@ class FimlController extends Controller
             ->whereDate('film_details.time_end', '=', now())
             ->orderBy('film_details.time_start')
             ->get();
-        return response()->json($films);
+        return $this->responseData($films);
     }
-    public function filmNow(){
+    public function filmNow()
+    {
         date_default_timezone_set('Asia/Ho_Chi_Minh');
+
         $films = DB::table('films')
             ->join('film_details', 'films.id', '=', 'film_details.film_id')
             ->join('film_prices', 'film_details.film_id', '=', 'film_prices.film_details_id')
@@ -33,6 +35,6 @@ class FimlController extends Controller
             ->where('film_details.time_end', '>=', now())
             ->orderBy('film_details.time_start')
             ->get();
-            return response()->json($films);
+        return $this->responseData($films);;
     }
 }

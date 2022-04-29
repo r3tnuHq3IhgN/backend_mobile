@@ -17,7 +17,7 @@ class FilmDetailController extends Controller
                 ->where('film_id', $film->id)
                 ->distinct()
                 ->get();
-            return $this->responseData($film_detail_days);
+            return $this->responseData($film_detail_days,200);
         } else {
             return $this->responseMessage("Film not exist");
         }
@@ -35,7 +35,7 @@ class FilmDetailController extends Controller
                 ->whereDate('time_start', $request->film_day)
                 ->distinct()
                 ->get();
-            return $this->responseData($film_detail_hours);
+            return $this->responseData($film_detail_hours,200);
         } else {
             return $this->responseMessage("Film not exist");
         }
