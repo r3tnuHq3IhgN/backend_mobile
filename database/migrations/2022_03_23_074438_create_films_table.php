@@ -19,7 +19,7 @@ class CreateFilmsTable extends Migration
             $table->dateTime('release_day');
             $table->integer('limit_age');
             $table->string('director');
-            $table->string('desc');
+            $table->text('desc');
             $table->integer('duration');
             $table->integer('subtitle');
             $table->string('poster');

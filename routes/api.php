@@ -6,7 +6,7 @@ use App\Http\Controllers\ApiUser;
 use App\Http\Controllers\ApiVnPay;
 use App\Http\Controllers\ChairController;
 use App\Http\Controllers\FilmDetailController;
-use App\Http\Controllers\FimlController;
+use App\Http\Controllers\FilmController;
 use App\Http\Controllers\FoodComboController;
 
 /*
@@ -43,8 +43,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [ApiUser::class, 'logout']);
 });
 //films
-Route::get('/coming-film', [FimlController::class, 'comingFilm']);
-Route::get('/film-now', [FimlController::class, 'filmNow']);
+Route::get('/coming-film', [FilmController::class, 'comingFilm']);
+Route::get('/film-now', [FilmController::class, 'filmNow']);
 Route::post('/vnpay-create', [ApiVnPay::class, 'create']);
 
 Route::get('/film/{film_id}/film-days', [FilmDetailController::class, 'filmDay']);
