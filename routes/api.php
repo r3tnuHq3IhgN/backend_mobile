@@ -48,6 +48,7 @@ Route::post('forgot-pass', [ApiUser::class, 'forgotPass']);
 //films
 Route::get('/coming-film', [FilmController::class, 'comingFilm']);
 Route::get('/film-now', [FilmController::class, 'filmNow']);
+<<<<<<< HEAD
 
 //vnpay
 Route::post('/vnpay-create', [ApiVnPay::class, 'createTransaction']);
@@ -56,6 +57,9 @@ Route::get('/vnpay-get', [ApiVnPay::class, 'getData']);
 //check phone
 Route::post('/check-phone', [ApiUser::class, 'checkPhone']);
 
+=======
+Route::post('/vnpay-create', [ApiVnPay::class, 'create']);
+>>>>>>> 966275f72f0d9f6d9bfaea19515c0c60347d94a2
 
 Route::get('/film/{film_id}/film-days', [FilmDetailController::class, 'filmDay']);
 Route::get('/film/{film_id}/film-hours', [FilmDetailController::class, 'filmHour']);
