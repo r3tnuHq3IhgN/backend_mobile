@@ -14,24 +14,24 @@ class ApiUser extends Controller
 {
     //
 
-    public function getUser() 
+    public function getUser()
     {
-        return $this->responseData(Auth::user(),200);
+        return $this->responseData(Auth::user(), 200);
     }
     public function getAllUser()
     {
         $users = DB::table('users')->all();
-        return $this->responseData($users,200);
+        return $this->responseData($users, 200);
     }
 
     public function registration(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users',
             'password' => 'required',
             'c_password' => 'required|same:password',
-            'phone' => 'required',
+            'phone' => 'required|unique:users',
         ]);
 
         if ($validator->fails()) {
@@ -87,6 +87,42 @@ class ApiUser extends Controller
             return $this->responseMessage('success');
         } else {
             return $this->responseMessage('inccorect pass');
+        }
+    }
+
+    public function forgotPass(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required',
+            'new_password' => 'required',
+            'confirm_password' => 'required|same:new_password',
+        ]);
+        if ($validator->fails()) {
+            return $this->responseMessage($validator->errors());
+        }
+        $data = DB::table('users')->where('phone', $request->phone)->first();
+        if ($data != null) {
+            DB::table('users')->where('phone', $request->phone)->update([
+                'password' =>  bcrypt($request['new_password'])
+            ]);
+            return $this->responseMessage("success");
+        } else {
+            return $this->responseMessage("can't find phone number");
+        }
+    }
+
+    public function checkPhone(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required',
+        ]);
+        $data = DB::table('users')->where('phone', $request->phone)->first();
+        if ($validator->fails()) {
+            return $this->responseMessage($validator->errors());
+        } else if ($data != null) {
+            return $this->responseMessage('have');
+        } else {
+            return $this->responseMessage("Can't find phone number");
         }
     }
 }

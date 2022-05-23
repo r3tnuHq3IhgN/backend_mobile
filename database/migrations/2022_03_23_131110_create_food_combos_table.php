@@ -16,7 +16,7 @@ class CreateFoodCombosTable extends Migration
         Schema::create('food_combos', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('desc');
+            $table->text('desc');
             $table->string('image');
             $table->integer('price');
             $table->timestamps();

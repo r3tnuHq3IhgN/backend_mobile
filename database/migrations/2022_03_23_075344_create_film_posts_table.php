@@ -16,7 +16,7 @@ class CreateFilmPostsTable extends Migration
         Schema::create('film_posts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('desc');
+            $table->text('desc');
             $table->string('image');
             $table->string('string');
             $table->timestamps();

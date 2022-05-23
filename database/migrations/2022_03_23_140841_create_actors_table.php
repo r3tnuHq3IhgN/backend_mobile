@@ -17,7 +17,7 @@ class CreateActorsTable extends Migration
             $table->id();
             $table->integer('film_id');
             $table->string('actor_name');
-            $table->string('actor_desc');
+            $table->text('actor_desc');
             $table->string('actor_image');
             $table->timestamps();
         });

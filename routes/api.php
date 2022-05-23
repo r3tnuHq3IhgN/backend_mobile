@@ -6,7 +6,7 @@ use App\Http\Controllers\ApiUser;
 use App\Http\Controllers\ApiVnPay;
 use App\Http\Controllers\ChairController;
 use App\Http\Controllers\FilmDetailController;
-use App\Http\Controllers\FimlController;
+use App\Http\Controllers\FilmController;
 use App\Http\Controllers\FoodComboController;
 
 /*
@@ -42,10 +42,20 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/check', [ApiUser::class, 'checkLoggerIn']);
     Route::post('/logout', [ApiUser::class, 'logout']);
 });
+// forgot pass
+Route::post('forgot-pass', [ApiUser::class, 'forgotPass']);
+
 //films
-Route::get('/coming-film', [FimlController::class, 'comingFilm']);
-Route::get('/film-now', [FimlController::class, 'filmNow']);
-Route::post('/vnpay-create', [ApiVnPay::class, 'create']);
+Route::get('/coming-film', [FilmController::class, 'comingFilm']);
+Route::get('/film-now', [FilmController::class, 'filmNow']);
+
+//vnpay
+Route::post('/vnpay-create', [ApiVnPay::class, 'createTransaction']);
+Route::get('/vnpay-get', [ApiVnPay::class, 'getData']);
+
+//check phone
+Route::post('/check-phone', [ApiUser::class, 'checkPhone']);
+
 
 Route::get('/film/{film_id}/film-days', [FilmDetailController::class, 'filmDay']);
 Route::get('/film/{film_id}/film-hours', [FilmDetailController::class, 'filmHour']);

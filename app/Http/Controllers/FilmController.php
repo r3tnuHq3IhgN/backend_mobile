@@ -6,7 +6,7 @@ use App\Models\Film;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class FimlController extends Controller
+class FilmController extends Controller
 {
     //
     public function comingFilm()
