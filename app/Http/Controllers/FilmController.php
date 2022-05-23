@@ -14,6 +14,7 @@ class FilmController extends Controller
         date_default_timezone_set('Asia/Ho_Chi_Minh');
 
         $films = DB::table('films')
+            ->join('film_details', 'films.id', '=', 'film_details.film_id')
             ->where('film_details.time_start', '>', now())
             ->whereDate('film_details.time_end', '=', now())
             ->orderBy('film_details.time_start')
@@ -25,6 +26,7 @@ class FilmController extends Controller
         date_default_timezone_set('Asia/Ho_Chi_Minh');
 
         $films = DB::table('films')
+            ->join('film_details', 'films.id', '=', 'film_details.film_id')
             ->where('film_details.time_start', '<=', now())
             ->where('film_details.time_end', '>=', now())
             ->orderBy('film_details.time_start')
