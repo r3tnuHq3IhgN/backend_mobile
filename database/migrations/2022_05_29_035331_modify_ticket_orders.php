@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTicketsTable extends Migration
+class ModifyTicketOrders extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,9 @@ class CreateTicketsTable extends Migration
      */
     public function up()
     {
-        Schema::create('tickets', function (Blueprint $table) {
-            $table->id();
+        Schema::table('ticket_orders', function (Blueprint $table) {
+            $table->dropColumn('film_price_id');
             $table->integer('film_detail_id');
-            $table->integer('department_id');
-            $table->integer('chair_id');
-            $table->integer('type');
-            $table->timestamps();
         });
     }
 
@@ -30,6 +26,9 @@ class CreateTicketsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tickets');
+        Schema::table('ticket_orders', function (Blueprint $table) {
+            $table->dropColumn('film_detail_id');
+            $table->integer('film_price_id');
+        });
     }
 }

@@ -35,7 +35,7 @@ class ApiUser extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->responseData($validator->errors(), 202);
+            return $this->responseData($validator->errors(), 400);
         }
         $allData = $request->all();
         $allData['password'] = bcrypt($allData['password']);
@@ -54,7 +54,7 @@ class ApiUser extends Controller
             $resArr['name'] = $user->name;
             return  $this->responseData($resArr, 200);
         } else {
-            return $this->responseData(['error' => 'Unauthorized Access'], 203);
+            return $this->responseData(['error' => 'Unauthorized Access'], 400);
         }
     }
 
@@ -79,14 +79,14 @@ class ApiUser extends Controller
             'confirm_password' => 'required|same:new_password',
         ]);
         if ($validator->fails()) {
-            return $this->responseData($validator->errors(), 202);
+            return $this->responseData($validator->errors(), 400);
         } else if ((Hash::check(request('password'), Auth::user()->password))) {
             DB::table('users')->where('id', '=', Auth::user()->id)->update([
                 'password' =>  bcrypt($request['new_password'])
             ]);
-            return $this->responseMessage('success');
+            return $this->responseMessage('success', 200);
         } else {
-            return $this->responseMessage('inccorect pass');
+            return $this->responseMessage('inccorect pass', 400);
         }
     }
 
@@ -98,16 +98,16 @@ class ApiUser extends Controller
             'confirm_password' => 'required|same:new_password',
         ]);
         if ($validator->fails()) {
-            return $this->responseMessage($validator->errors());
+            return $this->responseMessage($validator->errors(), 400);
         }
         $data = DB::table('users')->where('phone', $request->phone)->first();
         if ($data != null) {
             DB::table('users')->where('phone', $request->phone)->update([
                 'password' =>  bcrypt($request['new_password'])
             ]);
-            return $this->responseMessage("success");
+            return $this->responseMessage("success", 200);
         } else {
-            return $this->responseMessage("can't find phone number");
+            return $this->responseMessage("can't find phone number", 400);
         }
     }
 
@@ -118,11 +118,11 @@ class ApiUser extends Controller
         ]);
         $data = DB::table('users')->where('phone', $request->phone)->first();
         if ($validator->fails()) {
-            return $this->responseMessage($validator->errors());
+            return $this->responseMessage($validator->errors(), 400);
         } else if ($data != null) {
-            return $this->responseMessage('have');
+            return $this->responseMessage('have', 400);
         } else {
-            return $this->responseMessage("Can't find phone number");
+            return $this->responseMessage("Can't find phone number", 400);
         }
     }
 }

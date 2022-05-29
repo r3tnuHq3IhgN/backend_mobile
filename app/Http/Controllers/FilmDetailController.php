@@ -17,9 +17,9 @@ class FilmDetailController extends Controller
                 ->where('film_id', $film->id)
                 ->distinct()
                 ->get();
-            return $this->responseData($film_detail_days,200);
+            return $this->responseData($film_detail_days, 200);
         } else {
-            return $this->responseMessage("Film not exist");
+            return $this->responseMessage("Film not exist", 400);
         }
     }
 
@@ -27,7 +27,7 @@ class FilmDetailController extends Controller
         $film = Film::find($request->film_id);
         if ($film) {
             if(!$request->film_day) {
-                return $this->responseMessage("Field film_day not given");
+                return $this->responseMessage("Field film_day not given", 400);
             }
             $film_detail_hours = DB::table('film_details')
                 ->select(DB::raw("DATE_FORMAT(time_start, '%H:%i:%s') as film_hour"))
@@ -35,9 +35,9 @@ class FilmDetailController extends Controller
                 ->whereDate('time_start', $request->film_day)
                 ->distinct()
                 ->get();
-            return $this->responseData($film_detail_hours,200);
+            return $this->responseData($film_detail_hours);
         } else {
-            return $this->responseMessage("Film not exist");
+            return $this->responseMessage("Film not exist", 400);
         }
     }
 
@@ -45,7 +45,7 @@ class FilmDetailController extends Controller
         $film = Film::find($request->film_id);
         if ($film) {
             if(!$request->time_start) {
-                return $this->responseMessage("Field time_start not given");
+                return $this->responseMessage("Field time_start not given", 400);
             }
             $film_detail_types = DB::table('film_details')
                 ->select('type')
@@ -55,7 +55,7 @@ class FilmDetailController extends Controller
                 ->get();
             return $this->responseData($film_detail_types);
         } else {
-            return $this->responseMessage("Film not exist");
+            return $this->responseMessage("Film not exist", 400);
         }
     }
 }

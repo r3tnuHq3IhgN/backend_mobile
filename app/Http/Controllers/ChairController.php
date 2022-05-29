@@ -20,7 +20,7 @@ class ChairController extends Controller
         if ($room) {
             return $this->responseData($room->chairs()->get(['name', 'type', 'status']));
         } else {
-            return $this->responseMessage("Room doesn't exist");
+            return $this->responseMessage("Room doesn't exist", 400);
         }
     }
 }

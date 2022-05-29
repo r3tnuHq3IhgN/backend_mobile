@@ -20,8 +20,6 @@ use App\Http\Controllers\FoodComboController;
 |
 */
 
-
-
 Route::get('/login', [ApiUser::class, 'login']); 
 
 Route::get('/all-user', [ApiUser::class, 'getAllUser']);
@@ -41,6 +39,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/change-pass', [ApiUser::class, 'changePass']);
     Route::post('/check', [ApiUser::class, 'checkLoggerIn']);
     Route::post('/logout', [ApiUser::class, 'logout']);
+    Route::post('order-ticket', [TicketController::class, 'order']);
 });
 // forgot pass
 Route::post('forgot-pass', [ApiUser::class, 'forgotPass']);
@@ -62,3 +61,4 @@ Route::get('/film/{film_id}/film-hours', [FilmDetailController::class, 'filmHour
 Route::get('/film/{film_id}/film-types', [FilmDetailController::class, 'filmType']);
 Route::get('/chairs', [ChairController::class, 'roomChairs']);
 Route::get('/food-combos', [FoodComboController::class, 'index']);
+Route::get('/film-posts', [FilmController::class, 'posts']);

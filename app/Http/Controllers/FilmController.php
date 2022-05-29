@@ -25,6 +25,15 @@ class FilmController extends Controller
         $films = DB::table('films')
             ->where('release_day', '<=', now()) 
             ->get();
-        return $this->responseData($films);;
+        return $this->responseData($films);
+    }
+
+    public function posts(Request $request)
+    {
+        $film = Film::find($request->film_id);
+        if(!$film) {
+            return $this->responseMessage('Film not found', 400);
+        }
+        return $this->responseData($film->posts);
     }
 }
