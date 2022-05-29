@@ -16,7 +16,7 @@ class FilmController extends Controller
         $films = DB::table('films')
             ->where('release_day', '>', now()) 
             ->get();
-        return $this->responseData($films);
+        return $this->responseData($films, 200);
     }
     public function filmNow()
     {
@@ -25,7 +25,7 @@ class FilmController extends Controller
         $films = DB::table('films')
             ->where('release_day', '<=', now()) 
             ->get();
-        return $this->responseData($films);
+        return $this->responseData($films, 200);
     }
 
     public function posts(Request $request)
@@ -34,6 +34,6 @@ class FilmController extends Controller
         if(!$film) {
             return $this->responseMessage('Film not found', 400);
         }
-        return $this->responseData($film->posts);
+        return $this->responseData($film->posts, 200);
     }
 }

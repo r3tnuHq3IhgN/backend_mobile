@@ -18,7 +18,7 @@ class ChairController extends Controller
             ->room_id;
         $room = Room::find($room_id);
         if ($room) {
-            return $this->responseData($room->chairs()->get(['name', 'type', 'status']));
+            return $this->responseData($room->chairs()->get(['name', 'type', 'status']), 200);
         } else {
             return $this->responseMessage("Room doesn't exist", 400);
         }

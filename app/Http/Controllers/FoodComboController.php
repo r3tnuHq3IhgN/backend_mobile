@@ -8,6 +8,6 @@ use App\Models\FoodCombo;
 class FoodComboController extends Controller
 {
     public function index() {
-        return $this->responseData(FoodCombo::all());
+        return $this->responseData(FoodCombo::all(), 200);
     }
 }
