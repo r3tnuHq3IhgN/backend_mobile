@@ -40,6 +40,13 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/check', [ApiUser::class, 'checkLoggerIn']);
     Route::post('/logout', [ApiUser::class, 'logout']);
     Route::post('order-ticket', [TicketController::class, 'order']);
+
+    //vnpay
+    Route::post('/vnpay-create', [ApiVnPay::class, 'createTransaction']);
+
+    //list bill of user
+    Route::get('/get-list-bill', [ApiVnPay::class, 'getListBill']);
+    
 });
 // forgot pass
 Route::post('forgot-pass', [ApiUser::class, 'forgotPass']);
@@ -48,9 +55,6 @@ Route::post('forgot-pass', [ApiUser::class, 'forgotPass']);
 Route::get('/coming-film', [FilmController::class, 'comingFilm']);
 Route::get('/film-now', [FilmController::class, 'filmNow']);
 
-//vnpay
-Route::post('/vnpay-create', [ApiVnPay::class, 'createTransaction']);
-Route::get('/vnpay-get', [ApiVnPay::class, 'getData']);
 
 //check phone
 Route::post('/check-phone', [ApiUser::class, 'checkPhone']);
