@@ -46,6 +46,9 @@ Route::middleware('auth:api')->group(function () {
 
     //list bill of user
     Route::get('/get-list-bill', [ApiVnPay::class, 'getListBill']);
+
+     //changeImage
+    Route::post('change-image', [ApiUser::class, 'changeImage']);
     
 });
 // forgot pass

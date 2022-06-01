@@ -125,4 +125,22 @@ class ApiUser extends Controller
             return $this->responseMessage("Can't find phone number", 400);
         }
     }
+    public function changeImage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'image' => 'required:image',
+        ]);
+        if ($validator->fails()) {
+            return $this->responseMessage($validator->errors(), 400);
+        } else {
+            $filename = time() . '.' . $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('images'), $filename);
+            $path = 'public/images/'.$filename;
+            $user_id = Auth::user()->id;
+            DB::table('users')->where('id', $user_id)->update([
+                'image' =>  $path
+            ]);
+            return $this->responseMessage('update image success');
+        }
+    }
 }
