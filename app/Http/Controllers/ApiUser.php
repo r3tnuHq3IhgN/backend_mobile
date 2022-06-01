@@ -140,7 +140,7 @@ class ApiUser extends Controller
             DB::table('users')->where('id', $user_id)->update([
                 'image' =>  $path
             ]);
-            return $this->responseMessage('update image success');
+            return $this->responseMessage('update image success', 200);
         }
     }
 }
