@@ -6,12 +6,50 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Chair;
+use App\Models\TicketOrder;
 
 class ApiVnPay extends Controller
 {
-    //
     public function createTransaction(Request $request)
     {
+        $user_id = auth('api')->user() ? auth('api')->user()->id : null;
+
+        if (!$user_id) {
+            return $this->responseMessage('Please log in', 400);
+        }
+        $chair_id = $request['chair_id'];
+        $food_combo_id = $request['food_combo_id'];
+        $film_detail_id = $request['film_detail_id'];
+
+        $validated = $request->validate([
+            'chair_id' => 'required|numeric',
+            'food_combo_id' => 'required|numeric',
+            'film_detail_id' => 'required|numeric',
+        ]);
+
+        $chair = Chair::find($chair_id);
+
+        switch ($chair->type) {
+            case 0:
+                $amount = 50000;
+                break;
+            case 1:
+                $amount = 100000;
+                break;
+            default:
+                $amount = 75000;
+                break;
+        }
+        
+        $order = TicketOrder::create([
+            'user_id' => $user_id,
+            'chair_id' => $chair_id,
+            'food_combo_id' => $food_combo_id,
+            'film_detail_id' => $film_detail_id,
+            'status' => false,
+        ]);
+
         error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
         date_default_timezone_set('Asia/Ho_Chi_Minh');
 
@@ -21,10 +59,10 @@ class ApiVnPay extends Controller
         $vnp_HashSecret = "ZRQYENHOGHZHRWUKZQMLPQHYDWMDWSVP"; //Chuỗi bí mật
 
         $vnp_TxnRef = $request['order_id']; // Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
-        $vnp_OrderInfo = $request['order_desc']; // Thông tin mô tả nội dung thanh toán (Tiếng Việt, không dấu). Ví dụ: **Nap tien cho thue bao 0123456789. So tien 100,000 VND**
-        $vnp_OrderType = $request['order_type']; // Mã danh mục hàng hóa. Mỗi hàng hóa sẽ thuộc một nhóm danh mục do VNPAY quy định. Xem thêm bảng Danh mục hàng hóa
-        $vnp_Amount = $request['amount'] * 100; // Số tiền thanh toán.
-        $vnp_Locale = $request['language']; // Ngôn ngữ giao diện hiển thị. Hiện tại hỗ trợ Tiếng Việt (vn), Tiếng Anh (en)
+        $vnp_OrderInfo = 'Thanh toan'; // Thông tin mô tả nội dung thanh toán (Tiếng Việt, không dấu). Ví dụ: **Nap tien cho thue bao 0123456789. So tien 100,000 VND**
+        $vnp_OrderType = 19001; // Mã danh mục hàng hóa. Mỗi hàng hóa sẽ thuộc một nhóm danh mục do VNPAY quy định. Xem thêm bảng Danh mục hàng hóa
+        $vnp_Amount = $amount * 100; // Số tiền thanh toán.
+        $vnp_Locale = 'vn'; // Ngôn ngữ giao diện hiển thị. Hiện tại hỗ trợ Tiếng Việt (vn), Tiếng Anh (en)
         $vnp_BankCode = $request['bank_code']; // VNPAYQR, VNBANK, INTCART
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR']; // Địa chỉ IP của khách hàng thực hiện giao dịch. Ví dụ: 13.160.92.202
         //Add Params of 2.0.1 Version
@@ -86,7 +124,6 @@ class ApiVnPay extends Controller
             }
             $query .= urlencode($key) . "=" . urlencode($value) . '&';
         }
-
         $vnp_Url = $vnp_Url . "?" . $query;
         if (isset($vnp_HashSecret)) {
             $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret); //  
@@ -99,20 +136,23 @@ class ApiVnPay extends Controller
             header('Location: ' . $vnp_Url);
             die();
         } else {
-            $data = DB::table('orders')->where('order_id', $_GET['vnp_TxnRef'])->first();
-            if ($data == null) {
-                DB::table('orders')->insert([
-                    'user_id' => Auth::user()->id,
-                    'order_id' => $vnp_TxnRef,
-                ]);
-            }
             echo json_encode($returnData);
         }
     }
-    public function getListBill(){
-        $data = DB::table('payments')->join('orders', 'orders.order_id', '=', 'payments.txn_ref')
-        ->where('orders.user_id', '=', Auth::user()->id)->get();
-        return $this->responseData($data, 200);
+    // public function getListBill(){
+    //     $data = DB::table('payments')->join('orders', 'orders.order_id', '=', 'payments.txn_ref')
+    //     ->where('orders.user_id', '=', Auth::user()->id)->get();
+    //     return $this->responseData($data, 200);
+    // }
+    public function return(Request $request) {
+        $url = session('url_prev','/');
+        if($request->vnp_ResponseCode == "00") {
+            $this->apSer->thanhtoanonline(session('cost_id'));
+            $order = Order::find($request->order_id);
+            $order->update(['status' => true]);
+            return redirect($url)->with('success' ,'Đã thanh toán phí dịch vụ');
+        }
+        session()->forget('url_prev');
+        return redirect($url)->with('errors' ,'Lỗi trong quá trình thanh toán phí dịch vụ');
     }
-
 }

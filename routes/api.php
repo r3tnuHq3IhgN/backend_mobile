@@ -39,11 +39,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/change-pass', [ApiUser::class, 'changePass']);
     Route::post('/check', [ApiUser::class, 'checkLoggerIn']);
     Route::post('/logout', [ApiUser::class, 'logout']);
-    Route::post('order-ticket', [TicketController::class, 'order']);
 
     //vnpay
     Route::post('/vnpay-create', [ApiVnPay::class, 'createTransaction']);
-
+    Route::get('/vnpay-return', [ApiVnPay::class, 'return']);
     //list bill of user
     Route::get('/get-list-bill', [ApiVnPay::class, 'getListBill']);
 
