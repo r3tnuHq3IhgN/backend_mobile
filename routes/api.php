@@ -42,7 +42,6 @@ Route::middleware('auth:api')->group(function () {
 
     //vnpay
     Route::post('/vnpay-create', [ApiVnPay::class, 'createTransaction']);
-    Route::get('/vnpay-return', [ApiVnPay::class, 'return']);
     //list bill of user
     Route::get('/get-list-bill', [ApiVnPay::class, 'getListBill']);
 
@@ -68,3 +67,4 @@ Route::get('/film/{film_id}/film-types', [FilmDetailController::class, 'filmType
 Route::get('/chairs', [ChairController::class, 'roomChairs']);
 Route::get('/food-combos', [FoodComboController::class, 'index']);
 Route::get('/film-posts', [FilmController::class, 'posts']);
+Route::get('/vnpay-return', [ApiVnPay::class, 'return']);

@@ -22,7 +22,6 @@
             'transaction_no' => $_GET['vnp_TransactionNo'],
             'transaction_status' => $_GET['vnp_TransactionStatus'],
             'txn_ref' => $_GET['vnp_TxnRef'],
-
             ]);
         }
     @endphp

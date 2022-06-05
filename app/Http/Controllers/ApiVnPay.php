@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Chair;
 use App\Models\TicketOrder;
+use App\Models\FoodCombo;
+use App\Models\Payment;
 
 class ApiVnPay extends Controller
 {
@@ -29,6 +31,8 @@ class ApiVnPay extends Controller
         ]);
 
         $chair = Chair::find($chair_id);
+
+        $food_price = FoodCombo::find($food_combo_id) ? FoodCombo::find($food_combo_id)->price : 0;
 
         switch ($chair->type) {
             case 0:
@@ -54,14 +58,14 @@ class ApiVnPay extends Controller
         date_default_timezone_set('Asia/Ho_Chi_Minh');
 
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = "http://127.0.0.1:8000/payment";
+        $vnp_Returnurl = "http://139.162.56.4:88/api/vnpay-return";
         $vnp_TmnCode = "U6IWK5LE"; // Mã website tại VNPAY 
         $vnp_HashSecret = "ZRQYENHOGHZHRWUKZQMLPQHYDWMDWSVP"; //Chuỗi bí mật
 
-        $vnp_TxnRef = $request['order_id']; // Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
+        $vnp_TxnRef = $order->id; // Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = 'Thanh toan'; // Thông tin mô tả nội dung thanh toán (Tiếng Việt, không dấu). Ví dụ: **Nap tien cho thue bao 0123456789. So tien 100,000 VND**
         $vnp_OrderType = 19001; // Mã danh mục hàng hóa. Mỗi hàng hóa sẽ thuộc một nhóm danh mục do VNPAY quy định. Xem thêm bảng Danh mục hàng hóa
-        $vnp_Amount = $amount * 100; // Số tiền thanh toán.
+        $vnp_Amount = ($amount + $food_price) * 100; // Số tiền thanh toán.
         $vnp_Locale = 'vn'; // Ngôn ngữ giao diện hiển thị. Hiện tại hỗ trợ Tiếng Việt (vn), Tiếng Anh (en)
         $vnp_BankCode = $request['bank_code']; // VNPAYQR, VNBANK, INTCART
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR']; // Địa chỉ IP của khách hàng thực hiện giao dịch. Ví dụ: 13.160.92.202
@@ -139,20 +143,25 @@ class ApiVnPay extends Controller
             echo json_encode($returnData);
         }
     }
-    // public function getListBill(){
-    //     $data = DB::table('payments')->join('orders', 'orders.order_id', '=', 'payments.txn_ref')
-    //     ->where('orders.user_id', '=', Auth::user()->id)->get();
-    //     return $this->responseData($data, 200);
-    // }
+
     public function return(Request $request) {
-        $url = session('url_prev','/');
         if($request->vnp_ResponseCode == "00") {
-            $this->apSer->thanhtoanonline(session('cost_id'));
-            $order = Order::find($request->order_id);
-            $order->update(['status' => true]);
-            return redirect($url)->with('success' ,'Đã thanh toán phí dịch vụ');
+            TicketOrder::where('id', $request->vnp_TxnRef)
+                ->update(['status' => true]);
+            $payment = Payment::create([
+                'amount' => $_GET['vnp_Amount']/100,
+                'bank_code' => $_GET['vnp_BankCode'],
+                'bank_tran_no' => $_GET['vnp_BankTranNo'],
+                'card_type' => $_GET['vnp_CardType'],
+                'order_info' => $_GET['vnp_OrderInfo'],
+                'pay_date' => $_GET['vnp_PayDate'],
+                'response_code' => $_GET['vnp_ResponseCode'],
+                'transaction_no' => $_GET['vnp_TransactionNo'],
+                'transaction_status' => $_GET['vnp_TransactionStatus'],
+                'txn_ref' => $_GET['vnp_TxnRef'],
+            ]);
+            return $this->responseData($payment, 200);
         }
-        session()->forget('url_prev');
-        return redirect($url)->with('errors' ,'Lỗi trong quá trình thanh toán phí dịch vụ');
+        return $this->responseMessage('Lỗi trong quá trình thanh toán phí dịch vụ', 400);
     }
 }
