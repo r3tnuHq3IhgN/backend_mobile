@@ -19,6 +19,7 @@ class CreateTicketOrdersTable extends Migration
             $table->integer('chair_id');
             $table->integer('film_price_id');
             $table->integer('food_combo_id')->nullable();
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }
