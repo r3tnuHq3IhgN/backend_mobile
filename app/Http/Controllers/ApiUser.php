@@ -129,17 +129,20 @@ class ApiUser extends Controller
     public function changeImage(Request $request)
     {
         if ($request->has('str')) {
-            $server_storage = 'http://139.162.56.4:88/';
+            $server_storage = 'http://127.0.0.1:8000/';
             $data = $request->str;  // your base64 encoded
-            $image = str_replace('data:image/' . $request->type . ';base64,', '', $data);
-            $image = str_replace(' ', '+', $image);
+
             $pos  = strpos($data, ';');
             $a = substr($data, 0, $pos);
             $type = explode('/', $a)[1];
+
+            $image = str_replace('data:image/' . $type . ';base64,', '', $data);
+            $image = str_replace(' ', '+', $image);
             $imageName = substr(md5(mt_rand()), 0, 7) . '.' . $type;
+
             $path = 'images/' . $imageName;
-            file_put_contents($path, base64_decode($image) );
-            //Storage::disk('public')->put($path, base64_decode($image));
+            //file_put_contents($path, base64_decode($image) );
+            Storage::disk('public')->put($path, base64_decode($image));
             $link = $server_storage . $path;
             $user_id = Auth::user()->id;
             DB::table('users')->where('id', $user_id)->update([
