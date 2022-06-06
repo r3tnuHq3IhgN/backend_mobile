@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ApiUser extends Controller
@@ -127,20 +128,25 @@ class ApiUser extends Controller
     }
     public function changeImage(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'image' => 'required:image',
-        ]);
-        if ($validator->fails()) {
-            return $this->responseMessage($validator->errors(), 400);
-        } else {
-            $filename = time() . '.' . $request->image->getClientOriginalExtension();
-            $request->image->move(public_path('images'), $filename);
-            $path = 'public/images/'.$filename;
+        if ($request->has('str')) {
+            $server_storage = 'http://139.162.56.4:88/storage/';
+            $data = $request->str;  // your base64 encoded
+            $image = str_replace('data:image/' . $request->type . ';base64,', '', $data);
+            $image = str_replace(' ', '+', $image);
+            $pos  = strpos($data, ';');
+            $a = substr($data, 0, $pos);
+            $type = explode('/', $a)[1];
+            $imageName = substr(md5(mt_rand()), 0, 7) . '.' . $type;
+            $path = 'images/' . $imageName;
+            Storage::disk('public')->put($path, base64_decode($image));
+            $link = $server_storage . $path;
             $user_id = Auth::user()->id;
             DB::table('users')->where('id', $user_id)->update([
-                'image' =>  $path
+                'image' =>  $link
             ]);
-            return $this->responseMessage('update image success', 200);
+            return $this->responseData(['link' => $link], 200);
+        } else {
+            return $this->responseMessage('update image error', 400);
         }
     }
 }

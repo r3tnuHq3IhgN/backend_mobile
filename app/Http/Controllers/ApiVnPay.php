@@ -58,7 +58,7 @@ class ApiVnPay extends Controller
         date_default_timezone_set('Asia/Ho_Chi_Minh');
 
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = "http://139.162.56.4:88/api/vnpay-return";
+        $vnp_Returnurl = "mobileproject://paymentSuccess";
         $vnp_TmnCode = "U6IWK5LE"; // Mã website tại VNPAY 
         $vnp_HashSecret = "ZRQYENHOGHZHRWUKZQMLPQHYDWMDWSVP"; //Chuỗi bí mật
 
