@@ -129,7 +129,7 @@ class ApiUser extends Controller
     public function changeImage(Request $request)
     {
         if ($request->has('str')) {
-            $server_storage = 'http://127.0.0.1:8000/';
+            $server_storage = 'http://139.162.56.4:88/';
             $data = $request->str;  // your base64 encoded
 
             $pos  = strpos($data, ';');
