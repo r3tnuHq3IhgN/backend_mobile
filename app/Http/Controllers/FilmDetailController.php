@@ -47,12 +47,16 @@ class FilmDetailController extends Controller
             if(!$request->time_start) {
                 return $this->responseMessage("Field time_start not given", 400);
             }
-            $film_detail_types = DB::table('film_details')
+            $film_details = DB::table('film_details')
                 ->select('type')
                 ->where('film_id', $film->id)
                 ->where('time_start', $request->time_start)
                 ->distinct()
                 ->get();
+            $film_detail_types = [];
+            forEach($film_details as $detail) {
+                $film_detail_types[] = $detail->type;
+            }
             return $this->responseData($film_detail_types, 200);
         } else {
             return $this->responseMessage("Film not exist", 400);

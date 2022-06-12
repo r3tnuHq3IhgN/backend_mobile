@@ -15,7 +15,7 @@ class ChairController extends Controller
             ->where('time_start', $request->time_start)
             ->where('type', $request->type)
             ->first();
-        $room = Room::find($film_detail->room_id);
+        $room = Room::where('id', $film_detail->room_id)->first();
         if ($room) {
             $chairs = $room->chairs()->get(['id', 'name', 'type', 'status']);
             $ticket_orders = DB::table('ticket_orders')->where('film_detail_id', $film_detail->id)->get();
