@@ -211,21 +211,25 @@ class ApiVnPay extends Controller
 
     public function checkVerify(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return $this->responseData($validator->errors(), 400);
-        } else {
-            $data = DB::table('ticket_orders')->where('id', $request->id)->first();
-            if ($data->status == 1) {
-                DB::table('ticket_orders')->where('id', $request->id)->update([
-                    'status' => 2,
-                ]);
-                return $this->responseMessage('true', 200); 
+        if (Auth::user()->role == 0) {
+            $validator = Validator::make($request->all(), [
+                'id' => 'required',
+            ]);
+            if ($validator->fails()) {
+                return $this->responseData($validator->errors(), 400);
             } else {
-                return $this->responseMessage('false', 200);
+                $data = DB::table('ticket_orders')->where('id', $request->id)->first();
+                if ($data->status == 1) {
+                    DB::table('ticket_orders')->where('id', $request->id)->update([
+                        'status' => 2,
+                    ]);
+                    return $this->responseMessage('true', 200);
+                } else {
+                    return $this->responseMessage('false', 200);
+                }
             }
+        } else {
+            return $this->responseMessage('Permission denied', 200);
         }
     }
 }
