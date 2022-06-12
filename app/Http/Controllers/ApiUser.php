@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-class ApiUser extends Controller
+class ApiUser extends Controller 
 {
     //
 
@@ -121,7 +121,7 @@ class ApiUser extends Controller
         if ($validator->fails()) {
             return $this->responseMessage($validator->errors(), 400);
         } else if ($data != null) {
-            return $this->responseMessage('have', 400);
+            return $this->responseMessage('have', 200);
         } else {
             return $this->responseMessage("Can't find phone number", 400);
         }

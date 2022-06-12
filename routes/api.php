@@ -47,6 +47,9 @@ Route::middleware('auth:api')->group(function () {
 
      //changeImage
     Route::post('change-image', [ApiUser::class, 'changeImage']);
+
+    //vefiry
+    Route::post('/check-verify', [ApiVnPay::class, 'checkVerify']); 
     
 });
 // forgot pass

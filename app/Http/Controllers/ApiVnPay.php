@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Chair;
 use App\Models\TicketOrder;
 use App\Models\FoodCombo;
@@ -32,10 +33,10 @@ class ApiVnPay extends Controller
         ]);
         $ticket_orders = DB::table('ticket_orders')->where('film_detail_id', $film_detail_id)->get();
         $ticket_order_ids = [];
-        forEach($ticket_orders as $ticket_order) {
+        foreach ($ticket_orders as $ticket_order) {
             $ticket_order_ids[] = $ticket_order->id;
         }
-        if(DB::table('chair_orders')->whereIn('chair_id', $chair_ids)->whereIn('ticket_order_id', $ticket_order_ids)->count() > 0) {
+        if (DB::table('chair_orders')->whereIn('chair_id', $chair_ids)->whereIn('ticket_order_id', $ticket_order_ids)->count() > 0) {
             return $this->responseMessage('Có ghế đã được đặt, vui lòng chọn lại', 400);
         };
         $chairs = Chair::whereIn('id', $chair_ids)->get(['id', 'type']);
@@ -46,12 +47,12 @@ class ApiVnPay extends Controller
             'film_detail_id' => $film_detail_id,
             'status' => false,
         ]);
-        forEach($chairs as $chair){
+        foreach ($chairs as $chair) {
             $chair_total_price += CHAIR_PRICES[$chair->type];
             DB::table('chair_orders')->insert(['ticket_order_id' => $order->id, 'chair_id' => $chair->id]);
         }
-        $food_combos = FoodCombo::whereIn('id', $food_combo_ids) ? FoodCombo::whereIn('id', $food_combo_ids)->get(['id','price']) : 0;
-        forEach($food_combos as $food_combo){
+        $food_combos = FoodCombo::whereIn('id', $food_combo_ids) ? FoodCombo::whereIn('id', $food_combo_ids)->get(['id', 'price']) : 0;
+        foreach ($food_combos as $food_combo) {
             $food_combos_price += $food_combo->price;
             DB::table('food_combo_orders')->insert(['ticket_order_id' => $order->id, 'food_combo_id' => $food_combo->id]);
         }
@@ -145,13 +146,14 @@ class ApiVnPay extends Controller
         }
     }
 
-    public function return(Request $request) {
-        if($request->vnp_ResponseCode == "00") {
+    public function return(Request $request)
+    {
+        if ($request->vnp_ResponseCode == "00") {
             $ticket_order = TicketOrder::where('id', $request->vnp_TxnRef)->first();
             $ticket_order->status = true;
             $ticket_order->save();
             $payment = Payment::create([
-                'amount' => $_GET['vnp_Amount']/100,
+                'amount' => $_GET['vnp_Amount'] / 100,
                 'bank_code' => $_GET['vnp_BankCode'],
                 'bank_tran_no' => $_GET['vnp_BankTranNo'],
                 'card_type' => $_GET['vnp_CardType'],
@@ -169,7 +171,8 @@ class ApiVnPay extends Controller
         return redirect()->away('mobileproject://paymentFail');
     }
 
-    public function getListBill(Request $request) {
+    public function getListBill(Request $request)
+    {
         $user_id = auth('api')->user() ? auth('api')->user()->id : null;
 
         if (!$user_id) {
@@ -177,7 +180,7 @@ class ApiVnPay extends Controller
         }
 
         $ticket_orders = DB::table('ticket_orders')->where('user_id', $user_id)->where('status', 1)->get(['id', 'film_detail_id']);
-        forEach($ticket_orders as $order) {
+        foreach ($ticket_orders as $order) {
             $film_detail = DB::table('film_details')->where('id', $order->film_detail_id)->first();
             $film = DB::table('films')->where('id', $film_detail->film_id)->first();
             $room = DB::table('rooms')->where('id', $film_detail->room_id)->first();
@@ -188,10 +191,10 @@ class ApiVnPay extends Controller
             $order->film_name = $film->name;
             $order->room_name = $room->name;
             $order->film_type = $film_detail->type;
-            forEach($chair_orders as $chair_order) {
+            foreach ($chair_orders as $chair_order) {
                 $chair_names[] = DB::table('chairs')->where('id', $chair_order->chair_id)->first()->name;
             }
-            forEach($food_combo_orders as $food_combo_order) {
+            foreach ($food_combo_orders as $food_combo_order) {
                 $combo = DB::table('food_combos')->where('id', $food_combo_order->food_combo_id)->first();
                 $food_combos[] = [
                     "name" => $combo->name,
@@ -204,5 +207,25 @@ class ApiVnPay extends Controller
         }
 
         return $this->responseData($ticket_orders, 200);
+    }
+
+    public function checkVerify(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return $this->responseData($validator->errors(), 400);
+        } else {
+            $data = DB::table('ticket_orders')->where('id', $request->id)->first();
+            if ($data->status == 1) {
+                DB::table('ticket_orders')->where('id', $request->id)->update([
+                    'status' => 2,
+                ]);
+                return $this->responseMessage('true', 200); 
+            } else {
+                return $this->responseMessage('false', 200);
+            }
+        }
     }
 }
