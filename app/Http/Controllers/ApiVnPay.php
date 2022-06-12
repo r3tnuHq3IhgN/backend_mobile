@@ -11,6 +11,8 @@ use App\Models\TicketOrder;
 use App\Models\FoodCombo;
 use App\Models\Payment;
 
+const CHAIR_PRICES = [50000, 10000, 75000];
+
 class ApiVnPay extends Controller
 {
     public function createTransaction(Request $request)
@@ -20,52 +22,51 @@ class ApiVnPay extends Controller
         if (!$user_id) {
             return $this->responseMessage('Please log in', 400);
         }
-        $chair_id = $request['chair_id'];
-        $food_combo_id = $request['food_combo_id'];
+        $chair_ids = $request['chair_id'];
+        $food_combo_ids = $request['food_combo_id'];
         $film_detail_id = $request['film_detail_id'];
-
         $validated = $request->validate([
-            'chair_id' => 'required|numeric',
-            'food_combo_id' => 'required|numeric',
+            'chair_id' => 'required',
+            'food_combo_id' => 'required',
             'film_detail_id' => 'required|numeric',
         ]);
-
-        $chair = Chair::find($chair_id);
-
-        $food_price = FoodCombo::find($food_combo_id) ? FoodCombo::find($food_combo_id)->price : 0;
-
-        switch ($chair->type) {
-            case 0:
-                $amount = 50000;
-                break;
-            case 1:
-                $amount = 100000;
-                break;
-            default:
-                $amount = 75000;
-                break;
+        $ticket_orders = DB::table('ticket_orders')->where('film_detail_id', $film_detail_id)->get();
+        $ticket_order_ids = [];
+        forEach($ticket_orders as $ticket_order) {
+            $ticket_order_ids[] = $ticket_order->id;
         }
-        
+        if(DB::table('chair_orders')->whereIn('chair_id', $chair_ids)->whereIn('ticket_order_id', $ticket_order_ids)->count() > 0) {
+            return $this->responseMessage('Có ghế đã được đặt, vui lòng chọn lại', 400);
+        };
+        $chairs = Chair::whereIn('id', $chair_ids)->get(['id', 'type']);
+        $chair_total_price = 0;
+        $food_combos_price = 0;
         $order = TicketOrder::create([
             'user_id' => $user_id,
-            'chair_id' => $chair_id,
-            'food_combo_id' => $food_combo_id,
             'film_detail_id' => $film_detail_id,
             'status' => false,
         ]);
-
+        forEach($chairs as $chair){
+            $chair_total_price += CHAIR_PRICES[$chair->type];
+            DB::table('chair_orders')->insert(['ticket_order_id' => $order->id, 'chair_id' => $chair->id]);
+        }
+        $food_combos = FoodCombo::whereIn('id', $food_combo_ids) ? FoodCombo::whereIn('id', $food_combo_ids)->get(['id','price']) : 0;
+        forEach($food_combos as $food_combo){
+            $food_combos_price += $food_combo->price;
+            DB::table('food_combo_orders')->insert(['ticket_order_id' => $order->id, 'food_combo_id' => $food_combo->id]);
+        }
         error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
         date_default_timezone_set('Asia/Ho_Chi_Minh');
 
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = "mobileproject://paymentSuccess";
-        $vnp_TmnCode = "U6IWK5LE"; // Mã website tại VNPAY 
+        $vnp_Returnurl = "http://139.162.56.4:88/api/vnpay-return";
+        $vnp_TmnCode = "U6IWK5LE"; // Mã website tại VNPAY
         $vnp_HashSecret = "ZRQYENHOGHZHRWUKZQMLPQHYDWMDWSVP"; //Chuỗi bí mật
 
         $vnp_TxnRef = $order->id; // Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = 'Thanh toan'; // Thông tin mô tả nội dung thanh toán (Tiếng Việt, không dấu). Ví dụ: **Nap tien cho thue bao 0123456789. So tien 100,000 VND**
         $vnp_OrderType = 19001; // Mã danh mục hàng hóa. Mỗi hàng hóa sẽ thuộc một nhóm danh mục do VNPAY quy định. Xem thêm bảng Danh mục hàng hóa
-        $vnp_Amount = ($amount + $food_price) * 100; // Số tiền thanh toán.
+        $vnp_Amount = ($chair_total_price + $food_combos_price) * 100; // Số tiền thanh toán.
         $vnp_Locale = 'vn'; // Ngôn ngữ giao diện hiển thị. Hiện tại hỗ trợ Tiếng Việt (vn), Tiếng Anh (en)
         $vnp_BankCode = $request['bank_code']; // VNPAYQR, VNBANK, INTCART
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR']; // Địa chỉ IP của khách hàng thực hiện giao dịch. Ví dụ: 13.160.92.202
@@ -146,8 +147,9 @@ class ApiVnPay extends Controller
 
     public function return(Request $request) {
         if($request->vnp_ResponseCode == "00") {
-            TicketOrder::where('id', $request->vnp_TxnRef)
-                ->update(['status' => true]);
+            $ticket_order = TicketOrder::where('id', $request->vnp_TxnRef)->first();
+            $ticket_order->status = true;
+            $ticket_order->save();
             $payment = Payment::create([
                 'amount' => $_GET['vnp_Amount']/100,
                 'bank_code' => $_GET['vnp_BankCode'],
@@ -160,8 +162,47 @@ class ApiVnPay extends Controller
                 'transaction_status' => $_GET['vnp_TransactionStatus'],
                 'txn_ref' => $_GET['vnp_TxnRef'],
             ]);
-            return $this->responseData($payment, 200);
+            return redirect()->away('mobileproject://paymentSuccess?' . http_build_query($request));
         }
-        return $this->responseMessage('Lỗi trong quá trình thanh toán phí dịch vụ', 400);
+        DB::table('food_combo_orders')->where('ticket_order_id', $request->vnp_TxnRef)->delete();
+        DB::table('chair_orders')->where('ticket_order_id', $request->vnp_TxnRef)->delete();
+        return redirect()->away('mobileproject://paymentFail');
+    }
+
+    public function getListBill(Request $request) {
+        $user_id = auth('api')->user() ? auth('api')->user()->id : null;
+
+        if (!$user_id) {
+            return $this->responseMessage('Please log in', 400);
+        }
+
+        $ticket_orders = DB::table('ticket_orders')->where('user_id', $user_id)->where('status', 1)->get(['id', 'film_detail_id']);
+        forEach($ticket_orders as $order) {
+            $film_detail = DB::table('film_details')->where('id', $order->film_detail_id)->first();
+            $film = DB::table('films')->where('id', $film_detail->film_id)->first();
+            $room = DB::table('rooms')->where('id', $film_detail->room_id)->first();
+            $chair_orders = DB::table('chair_orders')->where('ticket_order_id', $order->id)->get();
+            $food_combo_orders = DB::table('food_combo_orders')->where('ticket_order_id', $order->id)->get();
+            $chair_names = [];
+            $food_combos = [];
+            $order->film_name = $film->name;
+            $order->room_name = $room->name;
+            $order->film_type = $film_detail->type;
+            forEach($chair_orders as $chair_order) {
+                $chair_names[] = DB::table('chairs')->where('id', $chair_order->chair_id)->first()->name;
+            }
+            forEach($food_combo_orders as $food_combo_order) {
+                $combo = DB::table('food_combos')->where('id', $food_combo_order->food_combo_id)->first();
+                $food_combos[] = [
+                    "name" => $combo->name,
+                    "image" => $combo->image,
+                    "price" => $combo->price,
+                ];
+            }
+            $order->chair_names = $chair_names;
+            $order->food_combos = $food_combos;
+        }
+
+        return $this->responseData($ticket_orders, 200);
     }
 }

@@ -9,16 +9,32 @@ use Illuminate\Support\Facades\DB;
 class ChairController extends Controller
 {
     public function roomChairs(Request $request) {
-        $room_id = DB::table('film_details')
-            ->select('room_id')
+        $film_detail = DB::table('film_details')
+            ->select(['id', 'room_id'])
             ->where('film_id', $request->film_id)
             ->where('time_start', $request->time_start)
             ->where('type', $request->type)
-            ->first()->room_id;
-        $room = Room::find($room_id);
+            ->first();
+        $room = Room::find($film_detail->room_id);
         if ($room) {
-            return $this->responseData($room->chairs()->get(['id', 'name', 'type', 'status']), 200);
-        } else {
+            $chairs = $room->chairs()->get(['id', 'name', 'type', 'status']);
+            $ticket_orders = DB::table('ticket_orders')->where('film_detail_id', $film_detail->id)->get();
+            $ticket_order_ids = [];
+            forEach($ticket_orders as $ticket_order) {
+                $ticket_order_ids[] = $ticket_order->id;
+            }
+            $booked_chairs = DB::table('chair_orders')->whereIn('ticket_order_id', $ticket_order_ids)->get();
+            $chair_ids = [];
+            forEach($booked_chairs as $booked_chair) {
+                $chair_ids[] = $booked_chair->chair_id;
+            }
+            forEach($chairs as $chair) {
+                if(in_array($chair->id, $chair_ids)) {
+                    $chair->status = 1;
+                }
+            }
+            return $this->responseData($chairs, 200);
+         } else {
             return $this->responseMessage("Room doesn't exist", 400);
         }
     }

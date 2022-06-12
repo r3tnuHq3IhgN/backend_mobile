@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrdersTable extends Migration
+class CreateFoodComboOrdersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class CreateOrdersTable extends Migration
      */
     public function up()
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('food_combo_orders', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('order_id');
+            $table->integer('ticket_order_id');
+            $table->integer('food_combo_id');
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ class CreateOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('food_combo_orders');
     }
 }
