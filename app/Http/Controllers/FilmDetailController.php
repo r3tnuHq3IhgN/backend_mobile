@@ -50,7 +50,7 @@ class FilmDetailController extends Controller
             $film_detail_types = DB::table('film_details')
                 ->select('type')
                 ->where('film_id', $film->id)
-                ->whereDate('time_start', $request->time_start)
+                ->where('time_start', $request->time_start)
                 ->distinct()
                 ->get();
             return $this->responseData($film_detail_types, 200);
