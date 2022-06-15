@@ -12,7 +12,7 @@ use App\Models\TicketOrder;
 use App\Models\FoodCombo;
 use App\Models\Payment;
 
-const CHAIR_PRICES = [50000, 10000, 75000];
+const CHAIR_PRICES = [50000, 75000, 100000];
 
 class ApiVnPay extends Controller
 {
@@ -179,7 +179,7 @@ class ApiVnPay extends Controller
             return $this->responseMessage('Please log in', 400);
         }
 
-        $ticket_orders = DB::table('ticket_orders')->where('user_id', $user_id)->where('status', 1)->get(['id', 'film_detail_id']);
+        $ticket_orders = DB::table('ticket_orders')->where('user_id', $user_id)->where('status', '>', 0)->get(['id', 'film_detail_id', 'status']);
         foreach ($ticket_orders as $order) {
             $film_detail = DB::table('film_details')->where('id', $order->film_detail_id)->first();
             $film = DB::table('films')->where('id', $film_detail->film_id)->first();
@@ -189,6 +189,7 @@ class ApiVnPay extends Controller
             $chair_names = [];
             $food_combos = [];
             $order->film_name = $film->name;
+            $order->film_img = $film->poster;
             $order->room_name = $room->name;
             $order->film_type = $film_detail->type;
             foreach ($chair_orders as $chair_order) {
