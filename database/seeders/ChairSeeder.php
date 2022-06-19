@@ -14,26 +14,26 @@ class ChairSeeder extends Seeder
      */
     public function run()
     {
-        for($i = 1; $i <= 5; $i++) {
-            for($j = 1; $j <= 40; $j++) {
-                $chair_names = ["A", "B", "C", "D", "E"];
-                $number = $j % 8 != 0 ? $j % 8 : 8;
-                $char = $chair_names[floor(($j-1)/8)];
-                $type = 2;
-                switch($char){
-                    case "A":
-                        $type = 0;
-                        break;
-                    case "E":
-                        $type = 1;
-                        break;
+        $chair_names = ["A", "B", "C", "D", "E"];
+        for($room = 1; $room <= 5; $room++) {
+            for($row = 0; $row <= 4; $row++) {
+                if($row == 0) {
+                    $type = 0;
+                } else if($row == 4) {
+                    $type = 1;
+                } else {
+                    $type = 2;
                 }
-                DB::table('chairs')->insert([
-                    "room_id" => $i,
-                    "name" => $char . $number,
-                    "type" => $type,
-                    "status" => 0
-                ]);
+                for($col = 0; $col <= 7; $col++) {
+                    DB::table('chairs')->insert([
+                        "room_id" => $room,
+                        "row" => $row,
+                        "col" => $col,
+                        "name" => $chair_names[$row] . ($col + 1),
+                        "type" => $type,
+                        "status" => 0
+                    ]);
+                }
             }
         }
     }
