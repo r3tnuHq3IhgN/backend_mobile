@@ -188,12 +188,15 @@ class ApiVnPay extends Controller
             $food_combo_orders = DB::table('food_combo_orders')->where('ticket_order_id', $order->id)->get();
             $chair_names = [];
             $food_combos = [];
+            $order_price = 0;
             $order->film_name = $film->name;
             $order->film_img = $film->poster;
             $order->room_name = $room->name;
             $order->film_type = $film_detail->type;
             foreach ($chair_orders as $chair_order) {
-                $chair_names[] = DB::table('chairs')->where('id', $chair_order->chair_id)->first()->name;
+                $chair = DB::table('chairs')->where('id', $chair_order->chair_id)->first();
+                $chair_names[] = $chair->name;
+                $order_price += CHAIR_PRICES[$chair->type];
             }
             foreach ($food_combo_orders as $food_combo_order) {
                 $combo = DB::table('food_combos')->where('id', $food_combo_order->food_combo_id)->first();
@@ -202,9 +205,11 @@ class ApiVnPay extends Controller
                     "image" => $combo->image,
                     "price" => $combo->price,
                 ];
+                $order_price += $combo->price;
             }
             $order->chair_names = $chair_names;
             $order->food_combos = $food_combos;
+            $order->order_price = $order_price;
         }
 
         return $this->responseData($ticket_orders, 200);
