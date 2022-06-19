@@ -17,7 +17,7 @@ class ChairController extends Controller
             ->first();
         $room = Room::where('id', $film_detail->room_id)->first();
         if ($room) {
-            $chairs = $room->chairs()->get(['id', 'name', 'type', 'status']);
+            $chairs = $room->chairs()->get(['id', 'name', 'row', 'col', 'type', 'status']);
             $ticket_orders = DB::table('ticket_orders')->where('film_detail_id', $film_detail->id)->get();
             $ticket_order_ids = [];
             forEach($ticket_orders as $ticket_order) {
