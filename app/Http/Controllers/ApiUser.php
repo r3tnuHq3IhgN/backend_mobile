@@ -153,4 +153,13 @@ class ApiUser extends Controller
             return $this->responseMessage('update image error', 400);
         }
     }
+
+    public function saveDeviceId(Request $request) {
+        $user = Auth::user();
+        $device_id = $request->device_id;
+        $user->device_id = $device_id;
+        $user->save();
+
+        return $this->responseMessage('Update device id successfully', 200);
+    }
 }
