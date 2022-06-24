@@ -228,8 +228,9 @@ class ApiVnPay extends Controller
             } else {
                 $data = DB::table('ticket_orders')->where('id', $request->id)->first();
                 if ($data->status == 1) {
-                    $data->status = 2;
-                    $data->save();
+                    DB::table('ticket_orders')->where('id', $request->id)->update([
+                        'status' => 2,
+                    ]);
                     $message = "Your booked ticket is used. Have fun!";
                     $userId = User::where('id', $data->user_id)->first()->id;
                     OneSignal::sendNotificationToUser(
