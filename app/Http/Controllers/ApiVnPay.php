@@ -241,13 +241,13 @@ class ApiVnPay extends Controller
                         $buttons = null,
                         $schedule = null
                     );
-                    return $this->responseMessage('true', 200);
+                    return $this->responseMessage($userId, 200);
                 } else {
-                    return $this->responseMessage('false', 200);
+                    return $this->responseMessage($userId, 400);
                 }
             }
         } else {
-            return $this->responseMessage('Permission denied', 200);
+            return $this->responseMessage('Permission denied', 400);
         }
     }
 }
