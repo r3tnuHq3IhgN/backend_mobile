@@ -232,7 +232,7 @@ class ApiVnPay extends Controller
                         'status' => 2,
                     ]);
                     $message = "Your booked ticket is used. Have fun!";
-                    $userId = User::where('id', $data->user_id)->first()->id;
+                    $userId = User::where('id', $data->user_id)->first()->device_id;
                     OneSignal::sendNotificationToUser(
                         $message,
                         $userId,
