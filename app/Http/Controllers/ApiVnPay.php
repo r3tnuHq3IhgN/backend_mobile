@@ -235,7 +235,7 @@ class ApiVnPay extends Controller
                     $userId = User::where('id', $data->user_id)->first()->device_id;
                     OneSignal::sendNotificationToUser(
                         $message,
-                        [$userId],
+                        $userId,
                         $url = null,
                         $data = null,
                         $buttons = null,
@@ -243,7 +243,7 @@ class ApiVnPay extends Controller
                     );
                     return $this->responseMessage($userId, 200);
                 } else {
-                    return $this->responseMessage($userId, 400);
+                    return $this->responseMessage('false', 400);
                 }
             }
         } else {
