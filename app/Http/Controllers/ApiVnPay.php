@@ -232,7 +232,7 @@ class ApiVnPay extends Controller
                         'status' => 2,
                     ]);
                     $message = "Your booked ticket is used. Have fun!";
-                    $userId = User::where('id', $data->user_id)->first()->id;
+                    $userId = User::where('id', $data->user_id)->first()->device_id;
                     OneSignal::sendNotificationToUser(
                         $message,
                         $userId,
@@ -241,13 +241,13 @@ class ApiVnPay extends Controller
                         $buttons = null,
                         $schedule = null
                     );
-                    return $this->responseMessage('true', 200);
+                    return $this->responseMessage($userId, 200);
                 } else {
-                    return $this->responseMessage('false', 200);
+                    return $this->responseMessage($userId, 400);
                 }
             }
         } else {
-            return $this->responseMessage('Permission denied', 200);
+            return $this->responseMessage('Permission denied', 400);
         }
     }
 }
