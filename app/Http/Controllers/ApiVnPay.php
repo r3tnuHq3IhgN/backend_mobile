@@ -11,6 +11,7 @@ use App\Models\Chair;
 use App\Models\TicketOrder;
 use App\Models\FoodCombo;
 use App\Models\Payment;
+use App\Models\User;
 use OneSignal;
 
 const CHAIR_PRICES = [50000, 75000, 100000];
@@ -230,7 +231,7 @@ class ApiVnPay extends Controller
                     $data->status = 2;
                     $data->save();
                     $message = "Your booked ticket is used. Have fun!";
-                    $userId = Auth::user()->device_id;
+                    $userId = User::where('id', $data->user_id)->first()->id;
                     OneSignal::sendNotificationToUser(
                         $message,
                         $userId,
