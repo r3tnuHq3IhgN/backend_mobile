@@ -33,7 +33,7 @@ class ChairController extends Controller
                     $chair->status = 1;
                 }
             }
-            return $this->responseData($chairs, 200);
+            return response()->json(['data' => $data, 'total_columns' => 8], 200);
          } else {
             return $this->responseMessage("Room doesn't exist", 400);
         }
